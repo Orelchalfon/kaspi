@@ -1,0 +1,34 @@
+.error {
+  display: grid;
+  place-content: center;
+  justify-content: center;
+  align-content: center;
+  text-align: center;
+  height: 100vh;
+  font-size: 2rem;
+  color: var(--color-primary);
+  .error__header {
+    font-size: 5rem;
+  }
+  .error__subheader {
+    font-size: 3rem;
+  }
+  .error__link {
+    text-decoration: none;
+    margin-top: 2rem;
+    padding: 1rem 2rem;
+    font-size: 2rem;
+    font-weight: 600;
+    color: #2c2c2c;
+    background-color: #f8f9fa;
+    border: 1px solid #f8f9fa;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+    &:hover {
+      background-color: #f8f9fa;
+      border: 1px solid #f8f9fa;
+      color: #000;
+    }
+  }
+}

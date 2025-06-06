@@ -1,0 +1,27 @@
+Kaspiapp/
+├── server/
+│   ├── src/
+│   │   ├── controllers/
+│   │   │   ├── userController.ts
+│   │   │   ├── parentController.ts
+│   │   │   └── childController.ts
+│   │   ├── db/
+│   │   │   └── db.ts
+│   │   ├── models/
+│   │   │   ├── user.model.ts
+│   │   │   ├── parent.model.ts
+│   │   │   └── child.model.ts
+│   │   ├── routes/
+│   │   │   ├── userRoutes.ts
+│   │   │   ├── parentRoutes.ts
+│   │   │   └── childRoutes.ts
+│   │   ├── types/
+│   │   │   ├── user.ts
+│   │   │   ├── parent.ts
+│   │   │   ├── child.ts
+│   │   │   └── common.ts
+│   │   ├── utils/
+│   │   └── app.ts
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── nodemon.json

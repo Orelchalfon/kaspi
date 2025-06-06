@@ -1,7 +1,9 @@
 import { Request, Response } from "express";
 
+import { mongodb } from "../../../Config/DB/MongoDB";
 import { IUser } from "../../../types";
 import {
+  createIndexToModel,
   findUserByEmailFromModel,
   getUserByIdFromModel,
   getUsersFromModel,
@@ -43,13 +45,11 @@ export const getUserById = async (req: Request, res: Response) => {
 export const registerUser = async (req: Request, res: Response) => {
   try {
     const { name, email, password } = req.body;
-
     if (!name || !email || !password) {
       return res
         .status(400)
         .json({ message: "mail, password, role and phoneNumber are required" });
     }
-
     const result = await registerUserToModel({
       name,
       email,
@@ -57,7 +57,7 @@ export const registerUser = async (req: Request, res: Response) => {
     } as IUser);
 
     if (!result?.acknowledged)
-      return res.status(404).json({ message: "user not found" });
+      return res.status(404).json({ message: "Something went wrong" });
 
     res.status(201).json({ message: "user added successfully", result });
   } catch (error) {
@@ -68,7 +68,7 @@ export const registerUser = async (req: Request, res: Response) => {
 export async function loginUser(req: Request, res: Response) {
   try {
     let { email, password } = req.body;
-
+    console.log(`email` + email, `password` + password);
     const result = await findUserByEmailFromModel(email, password);
     console.log(`result`, result);
     if (!result) return res.status(404).json({ message: "user not found" });
@@ -122,3 +122,6 @@ export const deactivateUser = async (req: Request, res: Response) => {
     res.status(500).json({ error });
   }
 };
+export const createIndexFromModel = async (field: string) => {
+  return await createIndexToModel("Users", field)
+}

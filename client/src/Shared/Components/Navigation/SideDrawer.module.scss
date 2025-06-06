@@ -1,0 +1,24 @@
+.side-drawer {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 100;
+  height: 100vh;
+  width: 50vw;
+  background-image: conic-gradient(
+    from 180deg at 50% 50%,
+    rgba(171, 171, 171, 0.8) 0%,
+    #8998a3 6%,
+    #22344a 180deg,
+    #aaaaab 360deg,
+    #ababab 360deg
+  );
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.26);
+  transition: all 0.3s ease;
+}
+@media (min-width: 769px) {
+  .side-drawer {
+    display: none;
+  }
+    
+}

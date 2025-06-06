@@ -1,0 +1,78 @@
+.button {
+  font: inherit;
+  padding: 0.5rem 1.5rem;
+  border: 1px solid var(--color-primary);
+  border-radius: 4px;
+  background-color: var(--color-primary);
+  color: white;
+  cursor: pointer;
+  margin-right: 1rem;
+  text-decoration: none;
+  display: inline-block;
+  transition: 0.25s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.button:focus {
+  outline: none;
+}
+
+.button:not(:is(.button--inverse)):is(:hover, :active) {
+  opacity: 0.5;
+}
+
+.button--inverse {
+  position: relative;
+  background: transparent;
+  color: var(--color-primary);
+}
+.button--inverse::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0%;
+  z-index: -1;
+  background-color: var(--color-primary);
+  border-radius: 4px;
+  transition: width 0.3s;
+}
+.button--inverse:is(:hover, :active) {
+  color: white;
+}
+.button--inverse:is(:hover, :active)::before {
+  width: 100%;
+  color: white;
+}
+
+.button--danger {
+  background: #830000;
+  border-color: #830000;
+}
+
+.button--danger:hover,
+.button--danger:active {
+  background: #f34343;
+  border-color: #f34343;
+}
+
+.button:disabled,
+.button:hover:disabled,
+.button:active:disabled {
+  background: #ccc;
+  color: #979797;
+  border-color: #ccc;
+  cursor: not-allowed;
+}
+
+.button--small {
+  font-size: 0.8rem;
+}
+
+.button--big {
+  font-size: 1.5rem;
+}

@@ -1,0 +1,429 @@
+
+use("KaspiDB")
+
+db.Users.deleteMany({})
+use("KaspiDB")
+
+db.Users.createIndex({ email: 1 }, { unique: true })
+function getAllRelatedAccounts(parentId) {
+    // Ensure the user is a parent
+    const parentUser = db.Users.findOne({ _id: parentId, role: 'parent' });
+    if (!parentUser) {
+      throw new Error("Access denied. User is not a parent.");
+    }
+  
+    return db.Accounts.aggregate([
+      {
+        $match: {
+          $or: [
+            { ownerId: parentId },
+            { parentId: parentId }
+          ]
+        }
+      },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'ownerId',
+          foreignField: '_id',
+          as: 'ownerDetails'
+        }
+      },
+      {
+        $unwind: '$ownerDetails'
+      },
+      {
+        $project: {
+          _id: 1,
+          accountNumber: 1,
+          balance: 1,
+          'ownerDetails.email': 1,
+          'ownerDetails.role': 1
+        }
+      }
+    ]).toArray();
+  }
+  
+  // Usage
+  const parentId = getAuthenticatedUserId();
+const allRelatedAccounts = getAllRelatedAccounts(parentId);
+  
+
+
+function getAccountDetailsWithTransactions(accountId, userId, transactionLimit = 5) {
+    if (!checkAccess(userId, accountId)) {
+      throw new Error("Access denied.");
+    }
+  
+    return db.Accounts.aggregate([
+      { $match: { _id: accountId } },
+      {
+        $lookup: {
+          from: "Transactions",
+          let: { accountId: "$_id" },
+          pipeline: [
+            { $match: { $expr: { $eq: ["$accountId", "$$accountId"] } } },
+            { $sort: { createdAt: -1 } },
+            { $limit: transactionLimit }
+          ],
+          as: "recentTransactions"
+        }
+      },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'ownerId',
+          foreignField: '_id',
+          as: 'ownerDetails'
+        }
+      },
+      {
+        $unwind: '$ownerDetails'
+      },
+      {
+        $project: {
+          _id: 1,
+          accountNumber: 1,
+          balance: 1,
+          'ownerDetails.email': 1,
+          recentTransactions: 1
+        }
+      }
+    ]).toArray();
+  }
+  
+  // Usage
+  const userId = getAuthenticatedUserId();
+  const accountId = ObjectId("660000000000000000000001"); // Replace with dynamic value
+const accountDetails = getAccountDetailsWithTransactions(accountId, userId);
+  
+function getAccountsSummary(parentId) {
+    // Ensure the user is a parent
+    const parentUser = db.Users.findOne({ _id: parentId, role: 'parent' });
+    if (!parentUser) {
+      throw new Error("Access denied. User is not a parent.");
+    }
+  
+    return db.Accounts.aggregate([
+      {
+        $match: {
+          $or: [
+            { ownerId: parentId },
+            { parentId: parentId }
+          ]
+        }
+      },
+      {
+        $lookup: {
+          from: 'Users',
+          localField: 'ownerId',
+          foreignField: '_id',
+          as: 'ownerDetails'
+        }
+      },
+      {
+        $unwind: '$ownerDetails'
+      },
+      {
+        $project: {
+          _id: 1,
+          accountNumber: 1,
+          balance: 1,
+          'ownerDetails.email': 1,
+          'ownerDetails.role': 1
+        }
+      }
+    ]).toArray();
+  }
+  
+  // Usage
+const accountsSummary = getAccountsSummary(parentId);
+  
+// Function to get recent transactions with access control
+function getRecentTransactionsForParent(parentId, transactionLimit = 10) {
+    // Ensure the user is a parent
+    const parentUser = db.Users.findOne({ _id: parentId, role: 'parent' });
+    if (!parentUser) {
+      throw new Error("Access denied. User is not a parent.");
+    }
+  
+    // Use aggregation to fetch account IDs
+    const accountIds = db.Accounts.aggregate([
+      {
+        $match: {
+          $or: [
+            { ownerId: parentId },
+            { parentId: parentId }
+          ]
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          accountIds: { $addToSet: "$_id" }
+        }
+      }
+    ]).toArray();
+  
+    if (accountIds.length === 0) return [];
+  
+    // Fetch recent transactions
+    return db.Transactions.aggregate([
+      {
+        $match: {
+          accountId: { $in: accountIds[0].accountIds }
+        }
+      },
+      {
+        $sort: { createdAt: -1 }
+      },
+      {
+        $limit: transactionLimit
+      },
+      {
+        $lookup: {
+          from: 'Accounts',
+          localField: 'accountId',
+          foreignField: '_id',
+          as: 'accountDetails'
+        }
+      },
+      {
+        $unwind: '$accountDetails'
+      },
+      {
+        $project: {
+          _id: 1,
+          amount: 1,
+          type: 1,
+          description: 1,
+          createdAt: 1,
+          'accountDetails.accountNumber': 1
+        }
+      }
+    ]).toArray();
+  }
+  
+  // Usage
+  const recentTransactions = getRecentTransactionsForParent(parentId);
+  // Function to transfer funds with access control and aggregation
+function transferFunds(fromAccountId, toAccountId, amount, description, userId) {
+    if (!checkAccess(userId, fromAccountId)) {
+      throw new Error("Access denied for the source account.");
+    }
+  
+    if (!checkAccess(userId, toAccountId)) {
+      throw new Error("Access denied for the destination account.");
+    }
+  
+    if (amount <= 0) {
+      throw new Error("Transfer amount must be positive.");
+    }
+  
+    const session = db.getMongo().startSession();
+    session.startTransaction();
+  
+    try {
+      // Check sufficient balance in the source account using aggregation
+      const sourceAccount = db.Accounts.aggregate([
+        { $match: { _id: fromAccountId } },
+        { $project: { balance: 1 } }
+      ], { session }).toArray();
+  
+      if (sourceAccount.length === 0 || sourceAccount[0].balance < amount) {
+        throw new Error("Insufficient funds in the source account.");
+      }
+  
+      // Update balances atomically
+      db.Accounts.updateOne(
+        { _id: fromAccountId },
+        { $inc: { balance: -amount } },
+        { session }
+      );
+  
+      db.Accounts.updateOne(
+        { _id: toAccountId },
+        { $inc: { balance: amount } },
+        { session }
+      );
+  
+      // Record the transaction
+      const transaction = {
+        accountId: fromAccountId,
+        userId: userId,
+        amount: amount,
+        type: "transfer",
+        description: description,
+        toAccountId: toAccountId,
+        createdAt: new Date()
+      };
+  
+      db.Transactions.insertOne(transaction, { session });
+  
+      session.commitTransaction();
+      session.endSession();
+  
+      return { success: true };
+    } catch (error) {
+      session.abortTransaction();
+      session.endSession();
+      throw error;
+    }
+  }
+  
+  // Usage
+  const fromAccountId = ObjectId("660000000000000000000001"); // Replace with dynamic value
+  const toAccountId = ObjectId("660000000000000000000002");   // Replace with dynamic value
+  const amount = 100.00;
+  const description = "Transfer to Child1";
+  
+  transferFunds(fromAccountId, toAccountId, amount, description, userId);
+  // Function to create a new task for a child with access control
+function createTask(parentId, childId, description, dueDate) {
+    // Ensure the parent has access to the child's account
+    const childUser = db.Users.findOne({ _id: childId, createdBy: parentId });
+    if (!childUser) {
+      throw new Error("Access denied. Child not found or not associated with the parent.");
+    }
+  
+    // Use aggregation to get parent's account
+    const parentAccount = db.Accounts.aggregate([
+      { $match: { ownerId: parentId } },
+      { $project: { _id: 1 } }
+    ]).toArray();
+  
+    if (parentAccount.length === 0) {
+      throw new Error("Parent's account not found.");
+    }
+  
+    const task = {
+      accountId: parentAccount[0]._id,
+      description: description,
+      status: "pending",
+      assignedTo: childId,
+      dueDate: dueDate,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    db.Tasks.insertOne(task);
+  }
+  
+  // Usage
+  const parentIdAuth = getAuthenticatedUserId();
+  const childId = ObjectId("650000000000000000000002"); // Replace with dynamic value
+  const newDesc = "Complete math homework";
+  const dueDate = new Date("2023-12-31T23:59:59Z");
+  
+  createTask(parentId, childId, newDesc, dueDate);
+  // Function to get tasks assigned to a child with access control
+function getTasksForChild(childId, userId) {
+    // Check if the requesting user has access
+    const childUser = db.Users.findOne({ _id: childId });
+    if (!childUser) {
+      throw new Error("Child user not found.");
+    }
+  
+    if (childUser._id.equals(userId) || childUser.createdBy.equals(userId)) {
+      return db.Tasks.aggregate([
+        { $match: { assignedTo: childId } },
+        { $sort: { dueDate: 1 } },
+        {
+          $lookup: {
+            from: 'Accounts',
+            localField: 'accountId',
+            foreignField: '_id',
+            as: 'accountDetails'
+          }
+        },
+        {
+          $unwind: '$accountDetails'
+        },
+        {
+          $project: {
+            _id: 1,
+            description: 1,
+            status: 1,
+            dueDate: 1,
+            progress: 1,
+            'accountDetails.accountNumber': 1
+          }
+        }
+      ]).toArray();
+    } else {
+      throw new Error("Access denied.");
+    }
+  }
+  
+  // Usage
+  const userIdAuth = getAuthenticatedUserId();
+  const childIdAuth = ObjectId("650000000000000000000002"); // Replace with dynamic value
+  const childTasks = getTasksForChild(childId, userId);
+  
+
+  // Function to get recent transactions for a child's account with access control
+function getRecentTransactionsForChild(childId, userId, transactionLimit = 10) {
+    // Check if the requesting user has access
+    const childUser = db.Users.findOne({ _id: childId });
+    if (!childUser) {
+      throw new Error("Child user not found.");
+    }
+  
+    if (!childUser._id.equals(userId) && !childUser.createdBy.equals(userId)) {
+      throw new Error("Access denied.");
+    }
+  
+    const childAccount = db.Accounts.findOne({ ownerId: childId });
+    if (!childAccount) {
+      throw new Error("Child's account not found.");
+    }
+  
+    return db.Transactions.aggregate([
+      { $match: { accountId: childAccount._id } },
+      { $sort: { createdAt: -1 } },
+      { $limit: transactionLimit },
+      {
+        $lookup: {
+          from: 'Accounts',
+          localField: 'accountId',
+          foreignField: '_id',
+          as: 'accountDetails'
+        }
+      },
+      {
+        $unwind: '$accountDetails'
+      },
+      {
+        $project: {
+          _id: 1,
+          amount: 1,
+          type: 1,
+          description: 1,
+          createdAt: 1,
+          'accountDetails.accountNumber': 1
+        }
+      }
+    ]).toArray();
+  }
+  
+  // Usage
+  const userIdAcs = getAuthenticatedUserId();
+  const childIdAcs = ObjectId("650000000000000000000002"); // Replace with dynamic value
+  const recentChildTransactions = getRecentTransactionsForChild(childId, userId);
+  function updateAccountDetails(accountId, userId, updateData) {
+    if (!checkAccess(userId, accountId)) {
+      throw new Error("Access denied.");
+    }
+  
+    db.Accounts.updateOne(
+      { _id: accountId },
+      { $set: updateData }
+    );
+  }
+  
+  // Usage
+  const userIdAcd = getAuthenticatedUserId();
+  const accountIdAcd = ObjectId("660000000000000000000001"); // Replace with dynamic value
+  const updateData = { isActive: false };
+  
+  updateAccountDetails(accountId, userId, updateData);
+  

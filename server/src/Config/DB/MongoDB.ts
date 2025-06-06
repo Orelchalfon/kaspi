@@ -13,7 +13,7 @@ class MongoDB<T> extends Database<T> {
   private dbName: string;
 
   private constructor(uri: string, dbName: string) {
-    super();
+    super()
     this.client = new MongoClient(uri);
     this.dbName = dbName;
   }
@@ -44,12 +44,11 @@ class MongoDB<T> extends Database<T> {
   async findMany<T>(
     collectionName: string,
     query: Partial<T> = {},
-    projection: object = {}
   ): Promise<Partial<T>[]> {
     await this.connect();
     try {
       return (await this.collection(collectionName)
-        .find(query, { projection })
+        .find(query, { projection: { password: 0 } })
         .toArray()) as T[];
     } catch (err) {
       console.error("Error in findMany:", err);
@@ -84,7 +83,7 @@ class MongoDB<T> extends Database<T> {
         return await this.collection(collectionName).insertOne({
           ...doc,
           isActive: true,
-        }) ;
+        });
 
       return await this.collection(collectionName).insertMany(
         doc.map((doc) => ({ ...doc, isActive: true }))

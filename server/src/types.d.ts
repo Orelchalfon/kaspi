@@ -9,7 +9,26 @@ type IUser = {
   phoneNumber?: string;
   createdAt?: Date;
   isActive?: boolean;
+  
 } & Document;
+
+// export interface User {
+//   _id: string;
+//   email: string;
+//   password: string;
+//   phoneNumber?: string;
+//   role: Role;
+//   accounts: string[];
+//   createdAt?: Date;
+//   updatedAt?: Date;
+//   isActive?: boolean;
+//   createdBy?: string;
+//   authTokenVersion?: number;
+//   passwordResetToken?: string;
+//   passwordResetExpires?: Date;
+//   authToken?: string;
+//   userType: "parent" | "child";
+// }
 
 type IAccount = {
   _id?: ObjectId;

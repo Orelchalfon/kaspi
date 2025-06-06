@@ -3,7 +3,6 @@ import cors from "cors";
 import "dotenv/config";
 import express from "express";
 
-
 import UsersRouter from "./Modules/Users/Routes";
 // Import other routers as you build them
 // import AccountsRouter from "./modules/accounts/routes/accountRoutes";

@@ -1,0 +1,148 @@
+/* .form-control {
+  margin: 1rem 0;
+}
+
+.form-control label,
+.form-control input,
+.form-control textarea {
+  display: block;
+}
+
+.form-control label {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.form-control input,
+.form-control textarea {
+  width: 100%;
+  font: inherit;
+  border: 1px solid #ccc;
+  background: #f8f8f8;
+  padding: 0.15rem 0.25rem;
+}
+
+.form-control input:focus,
+.form-control textarea:focus {
+  outline: none;
+  background: #ebebeb;
+  border-color: #510077;
+}
+
+.form-control--invalid label,
+.form-control--invalid p {
+  color: red;
+}
+
+.form-control--invalid input,
+.form-control--invalid textarea {
+  border-color: red;
+  background: #ffd1d1;
+} */
+
+// .form-control {
+//   margin: 1rem 0;
+// }
+
+// .form-control :where(textarea, input, label) {
+//   display: block;
+// }
+// :is(.form-control) label {
+//   font-weight: bold;
+
+//   margin-bottom: 0.5rem;
+//   scale: 1;
+//   color: #000000;
+//   transition: all 0.5s;
+// }
+
+// /* :is(.form-control):has(.inp[value=""]:not(:is(:focus))) label {
+//   font-weight: 600;
+//   translate: -5px 33px;
+//   scale: 0.9;
+//   margin-bottom: 0.5rem;
+//   color: #000000;
+// }
+// .form-control :has(textarea:checked) label {
+//   font-weight: 600;
+//   translate: -1rem 2.25rem;
+//   scale: 0.9;
+//   margin-bottom: 0.5rem;
+//   color: #000000;
+// } */
+// .form-control :where(textarea, input) {
+//   width: 100%;
+//   font: inherit;
+//   border: 1px solid #ccc;
+//   background: #f8f8f8;
+//   padding: 0.15rem 0.25rem;
+//   border-radius: 5px;
+// }
+
+// .form-control :where(textarea, input):is(:focus, :hover) {
+//   outline: none;
+//   background: #ebebeb;
+//   border-color: #a95f34;
+// }
+
+// .form-control--invalid label,
+// .form-control--invalid p {
+//   color: red;
+// }
+
+// .form-control--invalid input,
+// .form-control--invalid textarea {
+//   border-color: red;
+//   background: #ffd1d1;
+// }
+
+.form-control {
+  margin: 1rem 0;
+  min-width: 25rem;
+  textarea,
+  input,
+  label,
+  ul {
+    display: block;
+  }
+  label {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    transition: all 0.5s;
+  }
+  textarea,
+  input {
+    width: 100%;
+    font: inherit;
+    border: none;
+    background: #f8f8f8;
+    padding: 0.5rem 0.25rem;
+    border-radius: 0.25rem;
+    caret-color: black;
+  }
+
+  textarea,
+  input {
+    outline: none;
+    background: #ebebeb;
+    border-color: #a95f34;
+  }
+
+  &--invalid {
+    min-width: 25rem;
+    label,
+    ul {
+      color: red;
+    }
+    ul {
+      padding: 0rem 1.5rem;
+    }
+    input,
+    textarea {
+      border-color: red;
+      background: #ffd1d1;
+      padding: 0.5rem 0.25rem;
+      outline: none;
+    }
+  }
+}

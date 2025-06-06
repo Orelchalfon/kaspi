@@ -1,0 +1,60 @@
+@startuml
+left to right direction
+
+skinparam rectangle {
+    BackgroundColor white
+    BorderColor black
+    RoundCorner 15
+}
+
+rectangle "API Endpoints" as API {
+
+    rectangle "/api/v1/users/..." {
+        rectangle "GET    /" as get_users
+        rectangle "POST   /register" as post_register
+        rectangle "POST   /login" as post_login
+    }
+
+    rectangle "/api/v1/accounts/..." {
+        rectangle "GET    /user/:uid" as get_user_accounts
+        rectangle "GET    /:aid" as get_account_by_id
+        rectangle "POST   /" as post_create_account
+        rectangle "PATCH  /:aid" as patch_account
+        rectangle "DELETE /:aid" as delete_account
+    }
+
+    rectangle "/api/v1/tasks/..." {
+        rectangle "GET    /user/:uid" as get_user_tasks
+        rectangle "GET    /:tid" as get_task_by_id
+        rectangle "POST   /" as post_create_task
+        rectangle "PATCH  /:tid" as patch_task
+        rectangle "DELETE /:tid" as delete_task
+    }
+
+    rectangle "/api/v1/transactions/..." {
+        rectangle "GET    /user/:uid" as get_user_transactions
+        rectangle "GET    /:tid" as get_transaction_by_id
+        rectangle "POST   /" as post_create_transaction
+        rectangle "PATCH  /:tid" as patch_transaction
+        rectangle "DELETE /:tid" as delete_transaction
+    }
+
+    rectangle "/api/v1/virtual-cards/..." {
+        rectangle "GET    /user/:uid" as get_user_vcards
+        rectangle "GET    /:vcid" as get_vcard_by_id
+        rectangle "POST   /" as post_create_vcard
+        rectangle "PATCH  /:vcid" as patch_vcard
+        rectangle "DELETE /:vcid" as delete_vcard
+    }
+
+    rectangle "/api/v1/rewards/..." {
+        rectangle "GET    /user/:uid" as get_user_rewards
+        rectangle "GET    /:rid" as get_reward_by_id
+        rectangle "POST   /" as post_create_reward
+        rectangle "PATCH  /:rid" as patch_reward
+        rectangle "DELETE /:rid" as delete_reward
+    }
+
+}
+
+@enduml

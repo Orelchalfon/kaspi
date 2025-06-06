@@ -1,4 +1,4 @@
-import { compareSync, hashSync } from "bcrypt";
+import { compareSync, hashSync } from "bcryptjs";
 import { ObjectId } from "mongodb";
 import { mongodb } from "../../../Config/DB/MongoDB";
 import { IUser } from "../../../types";
@@ -76,6 +76,6 @@ export const updateUserToModel = async (id: string, user: IUser) => {
   return await mongodb.updateOne<IUser>("Users", id, user);
 };
 
-export const createIndexToModel = async (field: string) => {
+export const createIndexToModel = async (collection:string,field: string) => {
   return await mongodb.createIndex<IUser>("Users", field);
 };

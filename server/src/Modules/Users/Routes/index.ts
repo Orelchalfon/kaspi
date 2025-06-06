@@ -9,7 +9,7 @@ import {
 } from "../../../Modules/Users/Controllers";
 const UsersRouter = Router();
 
-UsersRouter.get("/", getAllUsers)
+UsersRouter.get("/", getAllUsers)//this is for adming previlages analizes and statistics 
   .post("/register", registerUser)
   .post("/login", loginUser)
   .get("/:id", getUserById)

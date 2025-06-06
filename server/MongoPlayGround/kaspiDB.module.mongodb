@@ -1,0 +1,144 @@
+const { hashSync, compareSync } = require("bcrypt");
+use("KaspiDB");
+const users = db.Users.find();
+
+const findUserByEmail = (email) => db.Users.findOne({ email });
+
+const signup = (newUser) =>
+{
+    const { email, password } = newUser;
+
+    // Check if the email already exists
+    if (findUserByEmail(email)) {
+        return "User already exists";
+    }
+
+    // Create and insert new user
+    const insertedUser = {
+        ...newUser,
+        password: hashSync(password, 10),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        deletedAt: null,
+        isActive: true
+    };
+    print("insertedUser", insertedUser);
+
+    const userRes = db.Users.insertOne(insertedUser);
+    print("userRes", userRes);
+
+    // Create a new account for the user
+    const accountRes = db.Accounts.insertOne({
+        ownerId: userRes.insertedId,
+        accountNumber: "ACC-2024002",
+        balance: 0,
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+    });
+    print("accountRes", accountRes);
+
+    // Insert dummy transactions
+    const dummyTransactionsPerUser = db.Transactions.insertMany([
+        {
+            accountId: accountRes.insertedId,
+            userId: userRes.insertedId,
+            type: "deposit",
+            amount: 100.00,
+            description: "Salary",
+            createdAt: new Date()
+        },
+        {
+            accountId: accountRes.insertedId,
+            userId: userRes.insertedId,
+            type: "withdrawal",
+            amount: 200.00,
+            description: "ATM withdrawal",
+            createdAt: new Date(new Date().getTime() - 24 * 60 * 60 * 1000) // 1 day ago
+        }
+    ]);
+    print("dummyTransactionsPerUser", dummyTransactionsPerUser);
+
+    // Update the user with the account ID
+    const updated = db.Users.updateOne(
+        { _id: userRes.insertedId },
+        { $push: { accounts: accountRes.insertedId } }
+    );
+    if (updated.modifiedCount === 0) {
+        return "Failed to create account";
+    }
+
+    print("Updated User with Account:", updated);
+
+    // Return the response
+    const res = { id: userRes.insertedId, email: email }; // Fixed typo here
+    return res;
+};
+
+const user = {
+    name: "Oleg",
+    email: "oc12@gmail.com",
+    password: "Oc1702(%",
+
+}
+const account = signup(user);
+print("account", account);
+
+const GetAccountTrasactions = (accountId) =>
+{
+    const transactions = db.Transactions.find({ accountId: accountId }).toArray();
+    return transactions;
+}
+
+
+const accountTransactions = GetAccountTrasactions(account.id);
+print("accountTransactions", accountTransactions);
+print("users", db.Users.find().toArray());
+print("accounts", db.Accounts.find().toArray());
+print("accounts", db.Transactions.find().toArray());
+// // const openAccount = (id) =>
+// // {
+// //     const accountRes = db.Accounts.insert({
+// //         ownerId: id,
+// //         accountNumber: "ACC-2024002",
+// //         balance: 0,
+// //         isActive: true,
+// //         createdAt: new Date(),
+// //         updatedAt: new Date(),
+// //     });
+// //     print("accountRes", accountRes);
+
+// //     db.Users.updateOne({ _id: userRes.insertedId }, { $push: { accounts: accountRes.insertedId } });
+// //     print("users", users);
+// //     const res = { id: accountRes.insertedId, email: email };
+// //     return res;
+// // }
+
+// print("account", account);
+// db.Transactions.find({ accountId: account.id })
+// const dummyTransactions = [
+//     {
+//         accountId: account.id,
+//         userId: ObjectId(),
+//         type: "deposit",
+//         amount: 100.00,
+//         description: "Salary",
+//         createdAt: new Date()
+//     }, {
+//         accountId: accountId,
+//         userId: ObjectId(),
+//         type: "withdrawal",
+//         amount: 200.00,
+//         description: "ATM withdrawal",
+//         createdAt: new Date(new Date().getTime() - 24 * 60 * 60 * 1000) // 1 day ago
+//     }
+// ]
+// const login = (email, password) => compareSync(findUserByEmail(email).password, password) ? "Logged in" : "Invalid email or password";
+
+// use("KaspiDB");
+// const findeUserById = (id) => db.Users.find({ id });
+
+// use("KaspiDB");
+// use("KaspiDB");
+// use("KaspiDB");
+// use("KaspiDB");
