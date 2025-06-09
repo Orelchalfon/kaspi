@@ -149,14 +149,32 @@ body {
   height: clamp(6rem, 3vw, 7rem);
   transition: all 0.3s;
 }
+.nav__toggle {
+  background: none;
+  border: none;
+  font-size: 2.5rem;
+  cursor: pointer;
+  display: block;
+}
+
 .nav__links {
   display: flex;
   flex-direction: column;
   align-items: center;
   list-style: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  background-color: #fff;
   visibility: hidden;
   opacity: 0;
-  transition: all 0.3s;
+  transition: opacity 0.3s ease;
+}
+
+.nav__links.nav__links--open {
+  visibility: visible;
+  opacity: 1;
 }
 
 h1 {
@@ -292,10 +310,15 @@ h4 {
     transition: all 0.3s;
   }
 
+  .nav__toggle {
+    display: none;
+  }
+
   .nav__links {
     flex-direction: row;
     opacity: 1;
     visibility: visible;
+    position: static;
   }
 
   .nav__item {

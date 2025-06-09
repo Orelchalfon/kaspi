@@ -10,7 +10,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ErrorBoundary>
       <BrowserRouter>
-        <App />
+        <AuthContextProvider>
+          <App />
+        </AuthContextProvider>
       </BrowserRouter>
     </ErrorBoundary>
   </React.StrictMode>
