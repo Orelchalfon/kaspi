@@ -33,6 +33,9 @@ const listItemVariants = {
 const Header: React.FC<HeaderProps> = ({ logo, onClickOpenAccount }) => {
   const { scrollY } = useScroll();
   const [isSticky, setIsSticky] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const toggleMenu = () => setMenuOpen((prev) => !prev);
   useMotionValueEvent(scrollY, "change", (latestScrollY) => {
     if (latestScrollY > 100) {
       setIsSticky(true);
@@ -65,11 +68,15 @@ const Header: React.FC<HeaderProps> = ({ logo, onClickOpenAccount }) => {
           id='logo'
           data-version-number='3.0'
         />
+        <button className='nav__toggle' onClick={toggleMenu} aria-label='Menu'>
+          &#9776;
+        </button>
         <motion.ul
           initial='hidden'
           animate='visible'
           variants={listVariants}
-          className='nav__links'
+          className={`nav__links ${menuOpen ? "nav__links--open" : ""}`}
+          onClick={() => setMenuOpen(false)}
         >
           <motion.li variants={listItemVariants} className='nav__item'>
             <a className='nav__link' href='#section--1'>
